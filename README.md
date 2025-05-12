@@ -35,7 +35,7 @@ In our downtime reduction assistant, we have multiple specialized LLM-powered ag
   
 Each agent uses the LLM in a different way (from writing SQL, to fetching documents, to generating code), but they all integrate with existing factory systems. The diagram below shows the high-level architecture and data flow of the solution, with the orchestrator, agents, data layers, and response formatter working together for each query.
 
-![image] (https://github.com/user-attachments/assets/c1ffce7d-fdb1-4875-8232-e66d113c9137)
+![image](https://github.com/user-attachments/assets/c1ffce7d-fdb1-4875-8232-e66d113c9137)
 
 Figure: High-level architecture of the multi-agent system. 
 *The Orchestrator Service receives user questions (Step 2) from the web UI and routes them (Step 4) to the appropriate agent based on intent. 
