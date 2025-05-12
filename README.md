@@ -1,5 +1,16 @@
 # Downtime-Analyzer Production Assistant Cookbook
 
+## Table of Contents
+- [Purpose and Audience](#1-purpose-and--audience)
+- [Use Cases Overview](#2-use-cases--overview)
+  - [Use Case 1 – SQL Agent – Querying Operational Data](#use-case--1--sql-agent--querying-operational-data)
+  - [Use Case 2 – RAG Agent – Troubleshooting with Manuals Q&A](#use-case--2--rag-agent--troubleshooting-with-manuals-qa)
+  - [Use Case 3 – CPLEX Agent – Optimization and What-If Simulations](#use-case--3--cplex-agent--optimization-and-what-if-simulations)
+- [Evaluation Metrics](#3--evaluation-metrics)
+- [Cost Implementation](#4--cost-implementation)
+- [Production Considerations](#5--production-considerations)
+- [Conclusion and Future Enhancements](#6--conclusion-and-future-enhancements)
+
 ### 1. Purpose and Audience
 
 This cookbook is designed for Solution Architects, AI Engineers, and technical leaders looking to implement sophisticated generative AI solutions to solve real-world business problems, moving beyond toy examples to create impactful applications. It focuses on a multi-agent AI system designed to reduce production downtime in a manufacturing environment—a scenario where every minute of inefficiency translates to significant financial losses and material waste.
@@ -24,7 +35,7 @@ In our downtime reduction assistant, we have multiple specialized LLM-powered ag
   
 Each agent uses the LLM in a different way (from writing SQL, to fetching documents, to generating code), but they all integrate with existing factory systems. The diagram below shows the high-level architecture and data flow of the solution, with the orchestrator, agents, data layers, and response formatter working together for each query.
 
-![image](https://github.com/user-attachments/assets/c1ffce7d-fdb1-4875-8232-e66d113c9137)
+![image] (https://github.com/user-attachments/assets/c1ffce7d-fdb1-4875-8232-e66d113c9137)
 
 Figure: High-level architecture of the multi-agent system. 
 *The Orchestrator Service receives user questions (Step 2) from the web UI and routes them (Step 4) to the appropriate agent based on intent. 
@@ -432,7 +443,7 @@ Below is a summary table of some key metrics with their definitions and sample v
 
 These metrics are logged during the conversations and continuously tracked in our analytics dashboard. They help us identify where to improve in production: e.g., if context recall drops, maybe we need to add more documents or improve search; if latency spikes, investigate which agent is slow, etc. And importantly, they show the value to stakeholders (e.g., “We cut downtime by 30%, translating to $X saved per week”). 
 
-### 4.Cost Implementation
+### 4. Cost Implementation
 Building and running an AI multi-agent system incurs costs which we carefully estimated and optimized. Costs come from two main sources: infrastructure (fixed costs) and API/model usage (variable costs). Below we break down the costs for each use case/agent per query, and then discuss how we manage fixed vs variable costs and strategies to keep the operations economical.
 
 #### 4A. Per-Query Function Call Breakdown by Use Case
@@ -458,7 +469,7 @@ To ensure the solution remains cost-effective as it scales, we implemented sever
 
 By applying these strategies, we’ve kept the operational cost well within acceptable limits. As we plan to scale to more factories and perhaps 10x the queries, these optimizations will allow us to handle the load without a linear 10x cost increase (ideally, we grow usage while maybe only 5x cost, thanks to efficiencies)
 
-### 5.Production Considerations
+### 5. Production Considerations
 Moving from a successful prototype to a production system required careful planning around success criteria, deployment, maintenance, and continuous improvement. Here we outline key considerations and best practices we adopted to ensure the system is robust and delivers ongoing value in a real factory setting.
 
 ##### 5A. Success Criteria and KPI Targets
@@ -504,7 +515,7 @@ Observability is crucial for a complex AI system to troubleshoot issues and ensu
 •	**Guardrails and Monitoring for Content:** While our domain is mostly technical, we still implemented guardrails to ensure the AI doesn’t produce inappropriate content or leak information. The Guardrails Service scans answers for things like profanity (shouldn’t happen with our prompts, but just in case) or hallucinations (e.g., it might detect if an answer has a citation that wasn’t in the retrieved text). We utilized the watsonx.gov python native functions to achieve this as well as some custom ones for checking SQL & CPLEX code syntax and validation. If something is flagged, we log it and modify the response or route it for human review. In practice, we rarely hit these triggers, but it’s good to have a safety net.
 *	**User Feedback Loop:** The thumbs-up/down feedback is also logged and aggregated. If certain queries often get thumbs-down, we prioritize them for investigation. We sometimes follow up directly with users (since it’s internal) to ask what went wrong. This direct feedback loop is gold for iterative improvement.
 
-### 6.Conclusion and Future Enhancements
+### 6. Conclusion and Future Enhancements
 In summary, taking this multi-agent LLM solution to production involved not just writing code, but setting up a whole ecosystem for it to thrive: defining what success means, deploying it in a robust architecture, keeping a close eye on it through monitoring, and continuously refining it through feedback and testing. By following these practices, we’ve achieved a reliable AI assistant that is now an integral tool in reducing downtime and improving operations in our manufacturing processes. The journey doesn’t end here – we will keep learning and improving the system, but the cookbook above provides a solid foundation for anyone looking to implement a similar Generative AI multi-agent solution in an enterprise setting.
 Looking ahead, our modular architecture and use-case-driven agent design open up a host of technology-forward enhancements:
 * **1.	Knowledge-Graph-Enhanced Retrieval**
