@@ -45,7 +45,7 @@ The Response Layer (Final Answer, Guardrails, Recommendation services) parses an
 Below, we go through each use case in detail, including how the agent works (tech stack), an example conversation flow, implementation snippets, and key lessons learned.
 
 #### Use Case 1 – SQL Agent – Querying Operational Data
-##### 1A. Core Technology Stack
+#### 1A. Core Technology Stack
 For analytical queries, the SQL Agent is responsible for converting natural language questions into database queries and then turning the query results into an insightful answer. The stack for this agent includes:
 *	LLM (OpenAI GPT-4) for understanding the user question and generating SQL code as well as summarizing results. We use a few-shot prompting approach where the model is given examples of questions and corresponding SQL queries to guide its output.
 *	Database Connector/Wrapper to safely execute the generated SQL on the company’s production database (which contains records of stoppages, downtime, etc.). The database is typically a SQL database (e.g., PostgreSQL or SQL Server) that stores structured data like factory name, line number, shift, machine, downtime minute etc.
@@ -54,7 +54,7 @@ For analytical queries, the SQL Agent is responsible for converting natural lang
   
 All these components are orchestrated such that the user’s question is translated to a DB query, executed, and then the results are fed back into the LLM to produce a friendly answer. The Final Answer Service then formats any tabular data into Markdown tables and the Recommendation Service may add follow-up questions.
  
-##### 1B. Conversation Flow
+#### 1B. Conversation Flow
 Example: The user asks Q1: “Can you show me the top 10 stoppages at Lincoln Factory last week?”. Here’s how the conversation flows through the system. 
 
 ![image](https://github.com/user-attachments/assets/64cf9777-fb1c-4520-bffa-d3f8b08ae502)
@@ -70,7 +70,7 @@ Note: Hierarchy handling logic to parse entities like factory, line, shift, and 
 
 This flow demonstrates how the SQL Agent goes from a user question to data and to a natural explanation, integrating multiple systems seamlessly. The user essentially gets a mini-report in seconds.
 
-##### 1C. Implementation (Code Snippets)
+#### 1C. Implementation (Code Snippets)
 Below are illustrative code snippets for implementing the SQL Agent logic using the OpenAI API and Python. We assume we have a function execute_sql(query) that runs a SQL query and returns results as a list of rows or a panda DataFrame, and a function get_issue_details(event) that fetches additional maintenance details for a downtime event.
 First, we prepare the LLM prompt for query generation with a few-shot example to guide the model:
 
@@ -158,7 +158,7 @@ In practice, you might combine some of these steps or use a single prompt that b
 *	Use the LLM to turn data into narrative, which is where the real value-add comes in for the user. Make sure you provide the prompt with enough business/use case context so that it can summarize with the appropriate level of detail. 
 *	If you run into issues with LLM token limits which is often the case, you can save the prompt Q&A examples in a vector DB and use similarity match to fetch most relevant k samples from the DB based on the user question.  
 
-##### 1D. Takeaways (Lessons Learned)
+#### 1D. Takeaways (Lessons Learned)
 Implementing the SQL Agent taught us several important lessons:
 *	**Provide schema and examples to the LLM:** We supplied table, column names, table relationships as well as syntax notes (either in the system prompt or few-shot examples) so it generates valid queries. It’s wise to include a brief schema description in the prompt context (e.g., “Table DowntimeEvents columns: Factory, Line, Shift, MachineName, Downtime, Product, Comments, EventDate”).
 *	**Guard against SQL injection or errors:** Even though the LLM writes the SQL, treat it as untrusted input. We validate the generated SQL — for example, restrict to a whitelist of SELECT statements or use prepared statements. The execution function should have safe-guards (read-only DB user, query timeout limits) to prevent any accidental harm. Also handle exceptions (if the SQL is malformed or times out, catch it and have the assistant respond gracefully) to provide an error message or a default response back to the user. 
@@ -168,7 +168,7 @@ Implementing the SQL Agent taught us several important lessons:
 
 #### Use Case 2 – RAG Agent – Troubleshooting with Manuals Q&A
 
-##### 2A. Core Technology Stack
+#### 2A. Core Technology Stack
 The RAG (Retrieval-Augmented Generation) Agent provides step-by-step troubleshooting guidance by grounding its answers in your own documentation (equipment manuals, SOPs, service reports). In production, we implement this with the OpenAI Assistants API’s file search tool, which handles chunking, embedding, and metadata filtering for you.
 1.	**Automatic File Ingestion & Chunking**
 *	Upload manuals (PDFs, DOCXs, etc.) via the Assistants API with purpose="assistants".
@@ -193,7 +193,7 @@ Please provide a safe, step-by-step procedure. Cite the manual where appropriate
 *	Safety-critical passages (lock-out/tag-out, PPE) are prioritized by tagging those sections with ```safety_level: "critical"``` metadata and bumping them to the top in retrieval.
 This stack ensures your RAG Agent never hallucinates procedures—it uses your own, up-to-date manuals, scoped by metadata filters, and synthesized by a best-in-class LLM.
 
-##### 2B. Conversation Flow
+#### 2B. Conversation Flow
 **User:** “How do I fix the jam in Conveyor 3?”
 
 **1.	Orchestrator** classifies this as a **Troubleshooting** query and extracts entities. 
@@ -225,7 +225,7 @@ When a user question arrives, the orchestrator agent first determines if it requ
   * …
   * Source: Conveyor 3 Maintenance Manual (pp. 45–46)
 
-##### 2C. Implementation Details
+#### 2C. Implementation Details
 ```
 from openai import OpenAI
 
@@ -270,7 +270,7 @@ print(answer)
 
 With this setup, your RAG Agent is both powerful and easy to maintain—updates to manuals or metadata are as simple as uploading new files, and the Assistants API takes care of the rest.
 
-##### 2D. Takeaways and Lessons Learned
+#### 2D. Takeaways and Lessons Learned
 
 *	**Document Preprocessing:** To maximize retrieval quality, ensure that documents are prepared for ingestion. Convert scanned PDFs or images of text into machine-readable text via OCR, since the file search tool has limited ability to parse images or non-text content in documents. It’s also wise to break up very large documents by section or topic if possible (the automatic chunking will handle splitting, but organizing content logically can aid relevance). Remove any content that is outdated or not meant to be used, so it doesn’t accidentally influence answers. Essentially, treat your knowledge base as a curated library: up-to-date, relevant, and in a text format that the AI can read. 
 *	**Metadata Usage:** Take advantage of metadata to label and organize your knowledge base. Decide on a schema for your metadata (e.g. machine, category, version, safety_level) and apply these tags during or after file upload. Currently, you may attach metadata by providing it when adding files to the vector store or by naming files in a consistent pattern that your system can interpret. Using metadata filters in queries will then allow the RAG agent to, for example, only retrieve chunks from Machine A’s manuals when the question is about Machine A. This selective retrieval greatly improves response precision. The Responses API’s retrieval tooling supports such filtering to narrow down search scopecookbook.openai.com. (Note: Ensure your metadata values are consistent and error-free; a typo in a tag could exclude relevant data from a search.)
@@ -280,7 +280,7 @@ For example, a tag like safety: "restricted" could signal the agent to either av
 
 #### Use Case 3 – CPLEX Agent – Optimization and “What-If” Simulations
 
-##### 3A. Core Technology Stack
+#### 3A. Core Technology Stack
 The **CPLEX Agent** (named after IBM CPLEX, a solver for optimization problems) is designed for scenario analysis and optimization queries. These are questions where the user is asking for a **decision or prediction** rather than a straightforward fact. For example: “What if we move product A to a different line, how would it affect output?” or “Optimize the maintenance schedule to minimize downtime.” Solving these often requires formulating a mathematical model or running a simulation. The stack for this agent is a bit special:
 
 *	**LLM (GPT-4)** for interpreting the question and generating a structured solution approach. We fine-tuned or few-shot trained the model to identify key components: assumptions, constraints, and objectives from the user query. The model was also trained on the mathematical formulations necessary to the problem space. Essentially, the LLM acts as a translator from natural language into a pseudo-code or actual code for solving the problem.
@@ -291,7 +291,7 @@ The **CPLEX Agent** (named after IBM CPLEX, a solver for optimization problems) 
   
 Overall, the CPLEX agent is like having a data scientist or a scientist in the loop of the conversation – it can run numbers and optimization logic on the fly and present results which now takes minutes instead of days. 
 
-##### 3B. Conversation Flow
+#### 3B. Conversation Flow
 Picking up the conversation, the user now asks Q4: **“Simulate the yield change if Maggi is replaced to Conveyor 2 instead of 3.”** This is a hypothetical scenario question. Here’s the flow:
 
 ![image](https://github.com/user-attachments/assets/9fba6977-427d-43c3-a6dc-79d7194addb0)
@@ -318,7 +318,7 @@ If No, then it’s just hypothetical and no action taken.
 
 In this flow, the user essentially had a data scientist quickly simulate a scenario and then got the option to turn that into action. This showcases how generative agents can not only inform but also assist in decision-making processes.
 
-##### 3B. Implementation (Code Snippets)
+#### 3B. Implementation (Code Snippets)
 Implementing the CPLEX agent involves prompting the LLM to produce either a direct answer with calculations or actual code. In development, we tried both approaches:
 
 *	**Direct Calculation:** For simpler “what-if” questions, the LLM can just do the math in its head (it’s surprisingly good at basic arithmetic, especially if the numbers are simple).
@@ -380,7 +380,7 @@ If the question were a more complex optimization like “Optimize the maintenanc
 
 In summary, the CPLEX agent implementation combines LLM reasoning with actual computational tools to ensure the answers are not just plausible, but computed. We encapsulated this in a service that can run the LLM’s generated code in a sandbox, catch errors (e.g., if the model code throws an exception), and return the results safely.
 
-##### 3C. Takeaways (Lessons Learned)
+#### 3C. Takeaways (Lessons Learned)
 From developing the CPLEX agent, we gathered several valuable insights:
 
 *	**NLP to Math translation is challenging:** Getting the model to correctly extract constraints and objectives from a question is hard. We found that providing explicit examples in the prompt of “how to list assumptions, constraints, etc.” improved reliability. It’s important to have the model restate the problem in its own structured way (as it did with the assumptions list) – this way, the user also sees transparently what is assumed. This manages expectations and allows the user to correct any wrong assumptions. We also provided the model with enough data context such that which columns would be used as constraints, which can be used in the objective function. This ensured that the downstream code that gets generated is accurate. 
@@ -399,7 +399,7 @@ Implementing a solution is only half the battle; we need to measure its effectiv
 
 ![image](https://github.com/user-attachments/assets/ac865af4-65b2-4274-9ac9-d0ffd9154491)
 
-#### 3A. Model Performance Metrics (Accuracy & Speed)
+### 3A. Model Performance Metrics (Accuracy & Speed)
 
 To quantitatively evaluate how well the AI agents perform their tasks, we use a mix of automated metrics and targeted testing:
 
@@ -415,7 +415,7 @@ To quantitatively evaluate how well the AI agents perform their tasks, we use a 
 
 **Conversation Quality (Human Evaluation):** Beyond automated metrics, we periodically do human-in-the-loop evaluation. Domain experts review a sample of Q&A transcripts, scoring them on correctness, clarity, and utility. This qualitative feedback helped us fine-tune prompts and decide on things like how much detail to include. Over time, the scores improved as we addressed issues (for example, early on the RAG agent sometimes gave generic advice lacking specific detail – human reviewers caught that, we then adjusted the retrieval to include more specific text). 
 
-#### 3B. Solution Impact Metrics (User Engagement & Business Outcomes)
+### 3B. Solution Impact Metrics (User Engagement & Business Outcomes)
 Ultimately, our success is measured by how much we reduce downtime and how well the solution is used by factory staff. 
 
 **Hypothesis for the Solution:** Using LLM Application would reduce the triage time during unplanned downtime at Factories. 
@@ -472,7 +472,7 @@ By applying these strategies, we’ve kept the operational cost well within acce
 ### 5. Production Considerations
 Moving from a successful prototype to a production system required careful planning around success criteria, deployment, maintenance, and continuous improvement. Here we outline key considerations and best practices we adopted to ensure the system is robust and delivers ongoing value in a real factory setting.
 
-##### 5A. Success Criteria and KPI Targets
+#### 5A. Success Criteria and KPI Targets
 Before broad rollout, we defined what success looks like. The evaluation metrics discussed serve as our KPIs:
 *	**Accuracy and Reliability:** We set a target that at least 90% of user queries should be answered usefully without human intervention. “Usefully” means either giving the user the info they needed or appropriately saying it doesn’t know (but not giving wrong info). We monitor the thumbs-up rate and aim to minimize the critical failure cases (like confidently incorrect answers).
 *	**Downtime Reduction:** The ultimate business success criterion is reduction in downtime. We targeted a 10% reduction in the first 3 months at pilot sites. We surpassed this in Lincoln factory (30%), which gave confidence. We also look at the number of incidents resolved faster. If previously a certain class of problem took, say, 30 minutes for an engineer to diagnose via manual logs but now they get the answer in 5 minutes via the assistant, that’s a win (even if not directly counted in downtime, it’s efficiency).
@@ -480,7 +480,7 @@ Before broad rollout, we defined what success looks like. The evaluation metrics
 * **Scalability:** A criterion for success is that the system can scale to all global factories (say 50 sites, 500 users) without degradation. This means the architecture must handle concurrent conversations, the latency should remain low, and costs per user remain sustainable. We tested the system under higher loads (simulate many parallel queries) to ensure the orchestrator and agents can scale horizontally. Success is when adding more users simply means scaling out pods or instances, with linear cost, and no major refactoring needed.
 *	**Compliance and Security:** Though not explicitly mentioned earlier, in production we must meet IT security requirements. Success meant passing security review: ensuring no sensitive data leakage, using encryption for data in transit, proper authentication (only authorized employees can access the system), and logging for audit. We integrated with the company’s SSO for authentication in the web UI, and limited the system to the internal network. We also have content filtering (via guardrails) to avoid any inappropriate use (like someone trying to get the AI to do something outside scope).
 
-##### 5B. Deployment Architecture (Microservices vs. Agents SDK)
+#### 5B. Deployment Architecture (Microservices vs. Agents SDK)
 We chose a **microservices architecture** to deploy the solution, aligning with the diagram presented:
 *	The **Web Layer (React UI + Auth)** is one service. It handles the interface and user management.
 *	The **Orchestrator Service** is a central microservice that receives questions from the UI (via an API call) and coordinates with agents. It’s stateless (other than pulling context from Redis), which means we can run multiple instances behind a load balancer to handle many users.
@@ -490,7 +490,7 @@ We chose a **microservices architecture** to deploy the solution, aligning with 
 *	**Containerization and Orchestration:** Each service (or set of related services) is containerized (Docker). We use Kubernetes to orchestrate them, which gives resiliency (auto-restarting crashed pods, scaling out, etc.). The vector database is also running in the cluster as a stateful service. The SQL DB and ServiceNow integration are external and done via Azure endpoints.
 *	**Deployment environments:** We maintain separate environments (dev, staging, prod). We test new versions of agents in staging with sample queries and some live shadow traffic before promoting to prod. CI/CD pipelines automate this, ensuring that any code change goes through linting, automated tests (we wrote tests for prompt outputs on known inputs), and then deployment.
 
-##### 5C. Model Versioning and Switching
+#### 5C. Model Versioning and Switching
 
 LLM technology evolves quickly, so we planned for model version management:
 *	We parameterize the model names (and API keys) in configuration. That means switching from one model to another is as simple as a config change and restart, no code change needed. For example, GPT4_MODEL = "gpt-4-0314" could be updated to a new version gpt-4-2025 when available.
@@ -500,7 +500,7 @@ LLM technology evolves quickly, so we planned for model version management:
 *	We maintain **prompt versioning** as well. Prompt tweaks can drastically change outputs. We label our prompts with versions (especially for complex ones like the CPLEX agent’s prompt with examples). If we update a prompt, we run our evaluation set to ensure it didn’t break something that was working. Essentially, we treat prompts like code – version controlled and tested. You can do it via custom functions or via a 3rd party platform such as IBM Watsonx.gov which is observerability tool with Python SDK for developers that can be easily integration within your system. 
 *	**Model updates from provider:** When OpenAI or others update model behaviors, we have to be vigilant. For example, if a new GPT-4 patch makes it follow formatting instructions differently, our table output might change. To handle this, we pin to specific model snapshots (like gpt-4-0314 which is the March 2024 version) and only move to newer ones after testing. This way, we’re not surprised by silent changes in model behavior.
 
-##### 5D. Performance and Latency Optimizations in Production
+#### 5D. Performance and Latency Optimizations in Production
 Latency can be a make-or-break factor for user experience. We implemented several tactics to keep the system snappy:
 *	**Parallel Agent Actions:** The orchestrator, in some cases, can call multiple things at once. For example, when the CPLEX agent is invoked for a scenario, in parallel it might fetch data from SQL and call the LLM -> here the microservices oriented architecture was useful to subdivide and parallelize the calls but it’s possible to use Function calls to implement this design as well with some custom coding. 
 *	**Profiling and reducing overhead:** We profiled each step. For instance, if the vector search took 500ms, can we reduce vector dimension or optimize indexing? We did fine-tune some of these. We also ensure our code doesn’t do unnecessary serialization/deserialization; passing data between services is done in a lightweight JSON format.
@@ -508,7 +508,7 @@ Latency can be a make-or-break factor for user experience. We implemented severa
 *	**Warm-up and caching:** The first call to an LLM model might be slow (cold start at LLM API’s end). We mitigate this by a warm-up call after deployment (ping each model once with a trivial prompt so it’s loaded). Also, our caching mentioned earlier not only saves cost but also latency (returning a cached answer is virtually instant). We do that for known frequently repeated queries, which users appreciate (they don’t even know it’s cached, it just feels super fast).
 *	**Scaling horizontally:** If we notice increased latency due to heavy load (many simultaneous users), we have auto-scaling rules to spawn more instances of services. The stateless nature of orchestrator and agents allows this. We simulate load to ensure the system can scale to, say, 100 concurrent conversations without slowing down during stress testing. The vector DB and SQL DB are sized and replicated to handle concurrent queries as well.
 
-##### 5E. Observability and Logging
+#### 5E. Observability and Logging
 Observability is crucial for a complex AI system to troubleshoot issues and ensure reliability:
 * **Centralized Logging:** During user testing phase, every request and response, along with meta-data (timestamps, model used, tokens used, any errors), is logged to a centralized log system. We use unique request IDs to trace a question through the orchestrator to an agent and back. This way, if a user reports a weird answer, we can find the exact conversation in logs and see what happened (including the full prompt that was sent to the model). Sensitive data in prompts (like actual table data) is handled carefully (we may mask certain fields in logs if needed for privacy). For normal production loads, we chose to log random user conversation (10-20%) due to storage and cost constraints. 
 * **Analytics Dashboard:** We built a small internal dashboard that surfaces the metrics discussed (like usage, accuracy, cost) using Watsonx.gov and has default and custom views. It pulls from the logs and database of conversations. This dashboard is reviewed in our weekly meetings to spot trends. It helps us answer questions like: Did the latest deployment improve things or cause any drop in quality? Are there new types of questions coming in that we didn’t anticipate?
