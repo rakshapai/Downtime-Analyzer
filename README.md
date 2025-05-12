@@ -23,6 +23,8 @@ The audience will gain insights into:
 *	Addressing challenges such as noisy data, user context management, and ensuring operational safety compliance.
 *	Evaluating the performance and impact of such AI solutions.
 *	Optimizing costs and preparing for production deployment.
+
+**Hypothesis:** Using this system will reduce the mean time to response for each incident and thereby production downtime (in mins). 
   
 **Audience:** This document is for technical leads and architects who will design and implement such an AI assistant. It assumes familiarity with concepts like LLM APIs, vector databases, and integration of APIs/DBs, but it explains the design choices and pitfalls with the help of use cases. By the end, a reader should understand how to build a multi-agent LLM application that works within an enterprise architecture — including how it routes user questions to different specialized agents, how those agents work under the hood, and how to evaluate and deploy the system for production use. 
 
@@ -451,6 +453,12 @@ Building and running an AI multi-agent system incurs costs which we carefully es
 ![Screen Shot 2025-05-11 at 9 20 16 PM](https://github.com/user-attachments/assets/476c09ac-2a8f-46a8-8de3-488dfadaf7f0)
 
 ![Screen Shot 2025-05-11 at 9 20 36 PM](https://github.com/user-attachments/assets/fa85f17c-5bac-41d2-9de9-748e65dfa06b)
+
+**cost calculator** - We also created a cost calculator that you see below that can easily come up with the total cost that any solution architect might need for their solution. This references the latest Open AI pricing from this [this link](https://platform.openai.com/docs/pricing)
+
+
+https://github.com/user-attachments/assets/aad39070-b5c7-4d91-b878-af7c9cc41377
+
 
 
 #### 4B. Cost Optimization Strategies
