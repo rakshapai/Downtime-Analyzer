@@ -454,7 +454,7 @@ Building and running an AI multi-agent system incurs costs which we carefully es
 
 ![Screen Shot 2025-05-11 at 9 20 36 PM](https://github.com/user-attachments/assets/fa85f17c-5bac-41d2-9de9-748e65dfa06b)
 
-**cost calculator** - We also created a cost calculator that you see below that can easily come up with the total cost that any solution architect might need for their solution. This references the latest Open AI pricing from this [this link](https://platform.openai.com/docs/pricing)
+**Cost Calculator** - We also created a dynamic calculator that you see below that can easily come up with the total cost that any solution architect might need for their solution. This can be changed for any number of API calls/GPT model/Type of system. This references the latest Open AI pricing from this [this link](https://platform.openai.com/docs/pricing)
 
 
 https://github.com/user-attachments/assets/aad39070-b5c7-4d91-b878-af7c9cc41377
