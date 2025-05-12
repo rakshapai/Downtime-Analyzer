@@ -522,8 +522,8 @@ Leverage the same multi-agent pattern for other domains—quality-control root-c
 
 #### 7.	Reference cookbooks and Resources
 * [Open AI model selection guide](https://cookbook.openai.com/examples/partners/model_selection_guide/model_selection_guide#3a-use-case-long-context-rag-for-legal-qa) – very detailed analysis on the latest open ai models applied to various use cases along with performance and cost considerations. 
-* [GPT-4.1 Prompting Guide] (https://cookbook.openai.com/examples/gpt4-1_prompting_guide) – detailed prompting techniques including structured multi-shot prompts for accuracy and completeness. 
-*	[Watsonx.gov guide](https://dataplatform.cloud.ibm.com/docs/content/wsj/analyze-data/fm-python-lib.html?context=wx) – for creating model and solution metrics which helps with performance logging and observability of the platform. 
+* [GPT-4.1 Prompting Guide](https://cookbook.openai.com/examples/gpt4-1_prompting_guide) – detailed prompting techniques including structured multi-shot prompts for accuracy and completeness. 
+* [Watsonx.gov guide](https://dataplatform.cloud.ibm.com/docs/content/wsj/analyze-data/fm-python-lib.html?context=wx) – for creating model and solution metrics which helps with performance logging and observability of the platform. 
 * [Agent Building](https://platform.openai.com/docs/guides/agents) – building agents including function, tool and guardrail calls. While this SDK not exactly used, the structure of the agent was used in the microservices architecture. 
 * [RAG with OpenAI & Azure Cognitive Search](https://docs.microsoft.com/azure/search/cognitive-search-vector-search) - Step-by-step on indexing documents in Azure Cognitive Search, using OpenAI embeddings, and building a retrieval-augmented agent.
 * [OpenAI Assistants API Tool Orchestration](https://cookbook.openai.com/examples/responses_api/responses_api_tool_orchestration) - Example of combining function-calling, file search, and multi-turn orchestration in a single assistive agent.
