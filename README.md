@@ -441,7 +441,6 @@ Building and running an AI multi-agent system incurs costs which we carefully es
 
 ![Screen Shot 2025-05-11 at 9 20 36 PM](https://github.com/user-attachments/assets/fa85f17c-5bac-41d2-9de9-748e65dfa06b)
 
-**Cost Calculator Link** - []
 
 #### 4B. Cost Optimization Strategies
 To ensure the solution remains cost-effective as it scales, we implemented several optimizations and best practices:
